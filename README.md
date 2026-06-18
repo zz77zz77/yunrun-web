@@ -123,8 +123,7 @@
 
 ```bash
 # 1. 克隆项目
-git clone 
-cd yunrunweb
+git clone https://github.com/zz77zz77/yunrun-web.git
 
 # 2. 启动服务
 docker compose up -d --build
@@ -612,7 +611,7 @@ function parsePoint(pointStr) {
 - 所有数据库连接通过环境变量配置，代码中无硬编码敏感信息
 - PU口袋校园密码使用 DES 加密传输
 - 管理后台支持多管理员、权限分级
-- 签到二维码每 30 秒自动刷新，防止截屏滥用
+- 签到二维码每 30 秒自动刷新
 
 ---
 
