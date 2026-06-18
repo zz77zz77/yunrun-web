@@ -2,6 +2,7 @@
 
 安徽邮电职业技术学院一站式大学生体测跑步与第二课堂活动管理平台，支持云跑步自动化、PU口袋校园活动自动报名、签到二维码生成等功能。
 
+##仅供学习和研究使用
 ---
 
 ## 功能特性
@@ -238,11 +239,11 @@ ports:
 **文件：`docker-compose.yml` 第 12-16 行**
 
 ```yaml
-volumes:
+volumes:                                #路径以实际为准，如果实在不懂就默认，将该项目直接上传至服务器/opt/yunrun/web/进行部署
   - /your/path/to/code:/app              # 源码路径
   - yunrun-data:/app/data                # 运行数据（Docker volume）
   - yunrun-tasks:/app/tasks              # 用户任务文件
-  - /your/path/to/school_tasks:/app/school_tasks  # 学校轨迹文件
+  - school_tasks:/app/school_tasks  # 学校轨迹文件
 ```
 
 ---
