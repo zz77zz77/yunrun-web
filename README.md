@@ -43,25 +43,25 @@
 
 ```
 ┌─────────────────────────────────────────────┐
-│                  前端 (Flask Templates)       │
-│   login.html │ index.html │ admin.html       │
-│   signup.html │ admin_login.html              │
+│                  前端 (Flask Templates)     │
+│   login.html │ index.html │ admin.html      │
+│   signup.html │ admin_login.html            │
 └──────────────────┬──────────────────────────┘
                    │
 ┌──────────────────▼──────────────────────────┐
-│               Flask 应用 (app.py)            │
+│               Flask 应用 (app.py)           │
 │   用户认证 │ 跑步调度 │ PU报名 │ 管理后台     │
 ├─────────────────────────────────────────────┤
-│   core.py        │  pu_core.py               │
-│   (云跑步核心)    │  (PU口袋核心)              │
+│   core.py        │  pu_core.py              │
+│   (云跑步核心)    │  (PU口袋核心)             │
 ├─────────────────────────────────────────────┤
-│   utils/pu_sign.py  │  utils/tools.py        │
-│   (X-Sign 加密)      │  (邮件发送)             │
+│   utils/pu_sign.py  │  utils/tools.py       │
+│   (X-Sign 加密)      │  (邮件发送)           │
 └──────────────────┬──────────────────────────┘
                    │
 ┌──────────────────▼──────────────────────────┐
-│            MySQL 8.0 (Docker 容器)           │
-│   users │ pu_users │ admins │ devices ...    │
+│            MySQL 8.0 (Docker 容器)          │
+│   users │ pu_users │ admins │ devices ...   │
 └─────────────────────────────────────────────┘
 ```
 
