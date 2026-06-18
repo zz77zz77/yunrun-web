@@ -9,5 +9,4 @@ data/cron_jobs.json
 data/email_config.json
 school_tasks/
 tasks/
-二维码获取/
 .mcp.json
