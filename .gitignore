@@ -3,10 +3,14 @@ __pycache__/
 *.pyo
 .env
 *.tar.gz
-data/sessions.json
-data/run_logs.json
-data/cron_jobs.json
-data/email_config.json
-school_tasks/
-tasks/
 .mcp.json
+
+# 运行时数据（保留目录结构，忽略内容）
+data/*
+!data/.gitkeep
+
+tasks/*
+!tasks/.gitkeep
+
+school_tasks/**/*
+!school_tasks/**/.gitkeep
