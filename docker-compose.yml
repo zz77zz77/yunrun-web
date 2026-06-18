@@ -1,0 +1,50 @@
+services:
+  yunrun-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_DATE: ${BUILD_DATE:-2026}
+    container_name: yunrun-web
+    restart: always
+    ports:
+      - "80:5000"
+    volumes:
+      - /opt/yunrun/web:/app          # 挂载源码
+      - yunrun-data:/app/data
+      - yunrun-tasks:/app/tasks
+      - /opt/yunrun/web/school_tasks:/app/school_tasks  # 直接挂载学校任务文件
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_HOST=yunrun-mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=yunrun2026
+      - MYSQL_DATABASE=yunrun
+    depends_on:
+      yunrun-mysql:
+        condition: service_healthy
+
+  yunrun-mysql:
+    image: docker.m.daocloud.io/library/mysql:8.0
+    container_name: yunrun-mysql
+    restart: always
+    ports:
+      - "3307:3306"
+    volumes:
+      - yunrun-mysql-data:/var/lib/mysql
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    environment:
+      - MYSQL_ROOT_PASSWORD=yunrun2026
+      - MYSQL_DATABASE=yunrun
+      - TZ=Asia/Shanghai
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pyunrun2026"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  yunrun-data:
+  yunrun-tasks:
+  yunrun-mysql-data:

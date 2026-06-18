@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>口袋校园自动报名</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh}
+
+/* 顶栏 */
+.topbar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.topbar-back{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f1f5f9;color:#374151;text-decoration:none;font-size:1.1rem;flex-shrink:0}
+.topbar-title{font-size:1rem;font-weight:700;flex:1}
+
+/* 内容区 */
+.wrap{max-width:680px;margin:0 auto;padding:16px}
+
+/* 卡片 */
+.card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:14px}
+.card h3{font-size:.95rem;font-weight:700;margin-bottom:12px;color:#374151}
+
+/* 表单 */
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:5px}
+.form-group input,.form-group select{width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;outline:none;background:#fff;-webkit-appearance:none}
+.form-group input:focus,.form-group select:focus{border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.12)}
+
+/* 按钮 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border:none;border-radius:8px;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none}
+.btn-primary{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+.btn-primary:active{opacity:.85}
+.btn-outline{background:#fff;border:1.5px solid #d1d5db;color:#374151}
+.btn-outline:active{background:#f9fafb}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-danger:active{opacity:.85}
+.btn-sm{padding:6px 12px;font-size:.8rem}
+.btn-xs{padding:4px 8px;font-size:.75rem;border-radius:6px}
+.btn-block{width:100%}
+
+/* 消息 */
+.msg{padding:10px 14px;border-radius:8px;font-size:.85rem;margin-top:10px}
+.msg.hidden{display:none}
+.msg.info{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+.msg.success{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.msg.error{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+
+/* 绑定状态 */
+.bound-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;font-size:.875rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+/* 开关 */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.toggle-info .toggle-title{font-weight:600;font-size:.9rem;margin-bottom:3px}
+.toggle-info .toggle-sub{font-size:.8rem;color:#64748b}
+.toggle{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#cbd5e1;border-radius:24px;cursor:pointer;transition:.2s}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked+.toggle-slider{background:#667eea}
+.toggle input:checked+.toggle-slider:before{transform:translateX(20px)}
+
+/* 活动列表 */
+.activity-item{padding:12px 14px;border-radius:10px;background:#f8fafc;margin-bottom:8px;cursor:pointer;border:1.5px solid #e2e8f0;transition:.15s;-webkit-tap-highlight-color:transparent}
+.activity-item:active{background:#e8f0fe;border-color:#667eea;transform:scale(.99)}
+.act-title{font-weight:600;font-size:.9rem;margin-bottom:5px;line-height:1.4}
+.act-meta{color:#64748b;font-size:.78rem;line-height:1.6}
+.act-badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:.72rem;font-weight:600;margin-right:4px}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-gray{background:#f1f5f9;color:#475569}
+
+/* 活动详情 */
+.detail-box{background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:14px;border:1px solid #e2e8f0}
+.detail-title{font-weight:700;font-size:1rem;margin-bottom:10px;line-height:1.4}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+.detail-row{font-size:.82rem;line-height:1.5}
+.detail-row .lbl{color:#64748b}
+.detail-row .val{color:#1a1a2e;font-weight:500}
+.detail-desc{margin-top:10px;font-size:.82rem;color:#475569;line-height:1.6;padding-top:10px;border-top:1px solid #e2e8f0}
+
+/* 日志 */
+.log-box{background:#1a1a2e;color:#a8ff78;border-radius:8px;padding:12px;font-family:monospace;font-size:.75rem;height:180px;overflow-y:auto;line-height:1.6}
+
+/* 空状态 */
+.empty{text-align:center;padding:32px 16px;color:#94a3b8;font-size:.875rem}
+.empty-icon{font-size:2.5rem;margin-bottom:8px}
+
+/* 报名结果 */
+.result-item{padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:.85rem}
+.result-ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.result-fail{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+
+@media(max-width:400px){
+  .detail-grid{grid-template-columns:1fr}
+  .wrap{padding:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- 顶栏 -->
+<div class="topbar">
+  <a href="/" class="topbar-back">←</a>
+  <div class="topbar-title">🎯 口袋校园报名</div>
+</div>
+
+<div class="wrap">
+
+  <!-- 账号绑定卡片 -->
+  <div class="card" id="bind-card">
+    <h3>🔗 绑定口袋校园账号</h3>
+
+    <!-- 已绑定状态 -->
+    <div id="bound-info" style="display:none;margin-bottom:12px">
+      <div class="bound-box">
+        <div>
+          <div style="font-weight:600" id="bound-username"></div>
+          <div style="font-size:.8rem;color:#64748b" id="bound-college"></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-xs" onclick="toggleQrcode()">📱 二维码</button>
+          <button class="btn btn-danger btn-xs" onclick="unbind()">解绑</button>
+        </div>
+      </div>
+      <!-- 二维码区域 -->
+      <div id="qrcode-box" style="display:none;margin-top:12px;text-align:center">
+        <div id="qrcode-loading" style="font-size:.82rem;color:#64748b;padding:16px">加载中...</div>
+        <img id="qrcode-img" style="display:none;max-width:180px;border-radius:8px;border:1px solid #e2e8f0;padding:8px;background:#fff">
+        <div id="qrcode-countdown" style="display:none;margin-top:10px">
+          <span style="font-size:2rem;font-weight:700;color:#667eea" id="countdown-num">30</span>
+          <span style="font-size:.82rem;color:#94a3b8"> 秒后自动刷新</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 绑定表单 -->
+    <div id="bind-form">
+      <p style="font-size:.82rem;color:#64748b;margin-bottom:12px">只需输入口袋校园密码，账号信息自动同步</p>
+      <div class="form-group">
+        <label>口袋校园密码</label>
+        <input type="password" id="pu-password" placeholder="请输入口袋校园密码" autocomplete="current-password">
+      </div>
+      <div class="form-group">
+        <label>通知邮箱（可选）</label>
+        <input type="email" id="pu-email" placeholder="报名结果通知邮箱" autocomplete="email">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="bindAccount()">🔗 绑定账号</button>
+    </div>
+
+    <div id="bind-msg" class="msg hidden"></div>
+  </div>
+
+  <!-- 自动托管 -->
+  <div class="card" id="scheduler-card" style="display:none">
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-title">⏰ 自动托管</div>
+        <div class="toggle-sub">开启后自动监控并抢报可报名活动</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="auto-scheduler-toggle" onchange="toggleScheduler(this)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- 定时报名任务 -->
+  <div class="card" id="scheduled-card" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h3 style="margin:0">📅 定时报名任务</h3>
+      <button class="btn btn-outline btn-sm" onclick="loadScheduled()">🔄</button>
+    </div>
+    <div id="scheduled-list"><div class="empty"><div class="empty-icon">📭</div>暂无定时任务</div></div>
+  </div>
+
+  <!-- 活动列表 -->
+  <div class="card" id="activities-card" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h3 style="margin:0">📋 活动列表</h3>
+      <div style="display:flex;align-items:center;gap:10px">
+        <label style="display:flex;align-items:center;gap:5px;font-size:.8rem;color:#64748b;cursor:pointer">
+          <input type="checkbox" id="only-future" checked style="width:15px;height:15px"> 仅未来
+        </label>
+        <button class="btn btn-outline btn-sm" onclick="loadActivities()">🔄</button>
+      </div>
+    </div>
+    <div id="activities-list"><div class="empty"><div class="empty-icon">📭</div>点击刷新加载活动</div></div>
+  </div>
+
+  <!-- 手动报名 -->
+  <div class="card" id="manual-card" style="display:none">
+    <h3>🚀 手动报名</h3>
+    <div class="form-group">
+      <label>选择活动</label>
+      <select id="signup-activity-sel" onchange="onActivitySelect()">
+        <option value="">-- 请先加载活动列表 --</option>
+      </select>
+    </div>
+
+    <div id="signup-activity-detail" style="display:none">
+      <div class="detail-box">
+        <div class="detail-title" id="detail-title"></div>
+        <div class="detail-grid">
+          <div class="detail-row"><span class="lbl">活动分类 </span><span class="val" id="detail-category"></span></div>
+          <div class="detail-row"><span class="lbl">举办组织 </span><span class="val" id="detail-creator"></span></div>
+          <div class="detail-row"><span class="lbl">活动地址 </span><span class="val" id="detail-address"></span></div>
+          <div class="detail-row"><span class="lbl">分数/学时 </span><span class="val" id="detail-credit"></span></div>
+          <div class="detail-row"><span class="lbl">可报名 </span><span class="val" id="detail-allow"></span></div>
+          <div class="detail-row"><span class="lbl">已报/剩余 </span><span class="val" id="detail-remain"></span></div>
+          <div class="detail-row"><span class="lbl">活动状态 </span><span class="val" id="detail-status"></span></div>
+          <div class="detail-row"><span class="lbl">需要审核 </span><span class="val" id="detail-audit"></span></div>
+          <div class="detail-row" style="grid-column:1/-1"><span class="lbl">开始报名 </span><b style="color:#10b981" id="detail-join-start"></b></div>
+          <div class="detail-row" style="grid-column:1/-1"><span class="lbl">结束报名 </span><b style="color:#ef4444" id="detail-join-end"></b></div>
+          <div class="detail-row"><span class="lbl">活动开始 </span><span class="val" id="detail-start"></span></div>
+          <div class="detail-row"><span class="lbl">活动结束 </span><span class="val" id="detail-end"></span></div>
+        </div>
+        <div class="detail-desc" id="detail-desc" style="display:none"></div>
+      </div>
+    </div>
+
+    <input type="hidden" id="signup-activity-id">
+    <input type="hidden" id="signup-join-time">
+    <button class="btn btn-primary btn-block" onclick="startSignup()" id="signup-btn">🚀 开始报名</button>
+    <div id="signup-msg" class="msg hidden"></div>
+    <div id="signup-results" style="margin-top:12px"></div>
+  </div>
+
+  <!-- 日志 -->
+  <div class="card" id="logs-card" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <h3 style="margin:0">📝 报名日志</h3>
+      <button class="btn btn-outline btn-xs" onclick="loadLogs()">🔄 刷新</button>
+    </div>
+    <div id="su-log-box" class="log-box"></div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+async function api(url, opts={}) {
+  try {
+    const res = await fetch(url, {headers:{'Content-Type':'application/json'},credentials:'include',...opts});
+    return await res.json();
+  } catch(e) { return {code:500, msg:'网络错误'}; }
+}
+
+async function init() {
+  const msgEl = document.getElementById('bind-msg');
+  msgEl.textContent = '加载中...';
+  msgEl.className = 'msg info';
+  const res = await api('/api/signup/users');
+  if(res.code === 401) { window.location.href = '/login'; return; }
+  if(res.code !== 200) {
+    msgEl.textContent = res.msg || '加载失败，请刷新重试';
+    msgEl.className = 'msg error';
+    return;
+  }
+  msgEl.className = 'msg hidden';
+  const users = res.data || [];
+  if(users.length > 0) showBound(users[0]);
+}
+
+function showBound(u) {
+  document.getElementById('bound-username').textContent = u.userName || '';
+  document.getElementById('bound-college').textContent = u.college || '';
+  document.getElementById('bound-info').style.display = 'block';
+  document.getElementById('bind-form').style.display = 'none';
+  document.getElementById('auto-scheduler-toggle').checked = !!u.auto_scheduler;
+  ['scheduler-card','scheduled-card','activities-card','manual-card','logs-card'].forEach(id => {
+    document.getElementById(id).style.display = 'block';
+  });
+  loadScheduled();
+  loadActivities();
+  loadLogs();
+}
+
+async function bindAccount() {
+  const msgEl = document.getElementById('bind-msg');
+  const password = document.getElementById('pu-password').value;
+  const email = document.getElementById('pu-email').value.trim();
+  if(!password){ msgEl.textContent='请输入密码'; msgEl.className='msg error'; return; }
+  msgEl.textContent = '绑定中，正在验证口袋校园账号...';
+  msgEl.className = 'msg info';
+  const res = await api('/api/signup/users/add', {method:'POST', body:JSON.stringify({password, email})});
+  if(res.code === 200) {
+    msgEl.textContent = '✅ 绑定成功';
+    msgEl.className = 'msg success';
+    showBound(res.user);
+  } else {
+    msgEl.textContent = res.msg || '绑定失败';
+    msgEl.className = 'msg error';
+  }
+}
+
+async function unbind() {
+  if(!confirm('确定解绑口袋校园账号？')) return;
+  const res = await api('/api/signup/users');
+  if(res.code === 200 && res.data.length > 0) {
+    const r = await api('/api/signup/users/delete', {method:'POST', body:JSON.stringify({id:res.data[0].id})});
+    if(r.code === 200) location.reload();
+    else alert(r.msg || '解绑失败');
+  }
+}
+
+async function toggleScheduler(cb) {
+  const res = await api('/api/signup/users/scheduler', {method:'POST', body:JSON.stringify({enabled:cb.checked})});
+  if(res.code !== 200) { alert(res.msg || '操作失败'); cb.checked = !cb.checked; }
+}
+
+let _activities = [];
+
+async function loadActivities() {
+  const list = document.getElementById('activities-list');
+  const onlyFuture = document.getElementById('only-future').checked;
+  list.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>加载中...</div>';
+  const [actRes, schedRes] = await Promise.all([
+    api('/api/signup/activities', {method:'POST', body:JSON.stringify({only_future:onlyFuture})}),
+    api('/api/signup/scheduled')
+  ]);
+  if(actRes.code !== 200) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>${actRes.msg || '加载失败'}</div>`;
+    return;
+  }
+  // 已注册的活动 id set
+  const scheduledIds = new Set((schedRes.data || []).map(t => String(t.activity_id)));
+  _activities = actRes.data || [];
+  if(!_activities.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>暂无活动</div>';
+  } else {
+    list.innerHTML = _activities.map((a,i) => {
+      const statusColor = a.status === '报名中' ? 'badge-green' : a.status === '已结束' ? 'badge-gray' : 'badge-blue';
+      const isScheduled = scheduledIds.has(String(a.activity_id));
+      const btnHtml = a.join_start_time ? `<div style="margin-top:8px" onclick="event.stopPropagation()">
+        ${isScheduled
+          ? `<button class="btn" disabled style="padding:5px 12px;font-size:.75rem;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:6px">✅ 已创建定时任务</button>`
+          : `<button class="btn" style="padding:5px 12px;font-size:.75rem;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:6px"
+              onclick="scheduleActivity(${i}, this)">📅 创建定时任务</button>`
+        }
+      </div>` : '';
+      return `<div class="activity-item" onclick="fillSignup(${i})">
+        <div class="act-title">${a.title || '未命名活动'}</div>
+        <div class="act-meta">
+          <span class="act-badge ${statusColor}">${a.status || '未知'}</span>
+          剩余 <b>${a.remain_count ?? '?'}</b> 人 &nbsp;·&nbsp; 学时 <b>${a.credit ?? '-'}</b>
+        </div>
+        <div class="act-meta" style="margin-top:3px">
+          报名: <b style="color:#10b981">${a.join_start_time || '未知'}</b>
+          <span style="color:#cbd5e1"> ~ </span>
+          <b style="color:#ef4444">${a.join_end_time || '未知'}</b>
+        </div>
+        ${btnHtml}
+      </div>`;
+    }).join('');
+  }
+  // 同步下拉框
+  const sel = document.getElementById('signup-activity-sel');
+  sel.innerHTML = '<option value="">-- 请选择活动 --</option>' +
+    _activities.map((a,i) => `<option value="${i}">${a.title || '未命名活动'}</option>`).join('');
+}
+
+function onActivitySelect() {
+  const idx = parseInt(document.getElementById('signup-activity-sel').value);
+  if(isNaN(idx) || !_activities[idx]) {
+    document.getElementById('signup-activity-detail').style.display = 'none';
+    return;
+  }
+  fillSignup(idx);
+}
+
+function fillSignup(idx) {
+  const a = _activities[idx];
+  if(!a) return;
+  document.getElementById('signup-activity-id').value = a.activity_id;
+  document.getElementById('signup-join-time').value = a.join_start_time || '';
+  document.getElementById('signup-activity-sel').value = idx;
+  document.getElementById('detail-title').textContent = a.title || '';
+  document.getElementById('detail-category').textContent = a.category || '-';
+  document.getElementById('detail-creator').textContent = a.creator || '-';
+  document.getElementById('detail-address').textContent = a.address || '-';
+  document.getElementById('detail-credit').textContent = a.credit ?? '-';
+  document.getElementById('detail-allow').textContent = a.allow_count ?? '-';
+  document.getElementById('detail-remain').textContent = `${a.join_count ?? 0} / 剩余 ${a.remain_count ?? '?'}`;
+  document.getElementById('detail-status').textContent = a.status || '-';
+  document.getElementById('detail-audit').textContent = a.is_audit ? '是' : '否';
+  document.getElementById('detail-join-start').textContent = a.join_start_time || '未知';
+  document.getElementById('detail-join-end').textContent = a.join_end_time || '未知';
+  document.getElementById('detail-start').textContent = a.start_time || '-';
+  document.getElementById('detail-end').textContent = a.end_time || '-';
+  const descEl = document.getElementById('detail-desc');
+  const descText = [
+    a.description ? `简介：${a.description}` : '',
+    a.restrict_colleges ? `限制院系：${a.restrict_colleges}` : ''
+  ].filter(Boolean).join('\n');
+  descEl.textContent = descText;
+  descEl.style.display = descText ? 'block' : 'none';
+  document.getElementById('signup-activity-detail').style.display = 'block';
+  document.getElementById('signup-results').innerHTML = '';
+  document.getElementById('signup-msg').className = 'msg hidden';
+  // 滚动到手动报名卡片
+  setTimeout(() => document.getElementById('manual-card').scrollIntoView({behavior:'smooth', block:'start'}), 100);
+}
+
+async function startSignup() {
+  const msgEl = document.getElementById('signup-msg');
+  const resultsEl = document.getElementById('signup-results');
+  const btn = document.getElementById('signup-btn');
+  const activity_id = document.getElementById('signup-activity-id').value.trim();
+  const join_start_time = document.getElementById('signup-join-time').value.trim();
+  if(!activity_id || !join_start_time) {
+    msgEl.textContent = '请先选择活动';
+    msgEl.className = 'msg error';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = '⏳ 提交中...';
+  msgEl.textContent = '报名任务已提交，等待结果...';
+  msgEl.className = 'msg info';
+  resultsEl.innerHTML = '';
+  const res = await api('/api/signup/start', {method:'POST', body:JSON.stringify({activity_id:parseInt(activity_id), join_start_time})});
+  if(res.code !== 200) {
+    msgEl.textContent = res.msg || '提交失败';
+    msgEl.className = 'msg error';
+    btn.disabled = false;
+    btn.textContent = '🚀 开始报名';
+    return;
+  }
+  pollJob(res.job_id, msgEl, resultsEl, btn);
+}
+
+async function pollJob(jobId, msgEl, resultsEl, btn) {
+  for(let i = 0; i < 120; i++) {
+    const res = await api('/api/signup/job/' + jobId);
+    if(res.code === 200 && res.data && res.data.status !== 'running') {
+      const result = res.data.result;
+      const list = Array.isArray(result) ? result : (result ? [result] : []);
+      if(list.length) {
+        resultsEl.innerHTML = list.map(r => {
+          const ok = r.ok || r.success;
+          return `<div class="result-item ${ok ? 'result-ok' : 'result-fail'}">
+            <b>${r.userName || ''}</b>：${ok ? '✅ 报名成功' : '❌ 报名失败'}
+            ${r.msg ? `<div style="font-size:.8rem;margin-top:3px;opacity:.8">${r.msg}</div>` : ''}
+          </div>`;
+        }).join('');
+        msgEl.className = 'msg hidden';
+      } else {
+        msgEl.textContent = `报名${res.data.status === 'completed' ? '完成' : '失败'}`;
+        msgEl.className = res.data.status === 'completed' ? 'msg success' : 'msg error';
+      }
+      btn.disabled = false;
+      btn.textContent = '🚀 开始报名';
+      loadLogs();
+      return;
+    }
+    await new Promise(r => setTimeout(r, 2000));
+  }
+  msgEl.textContent = '等待超时，请查看日志';
+  msgEl.className = 'msg error';
+  btn.disabled = false;
+  btn.textContent = '🚀 开始报名';
+}
+
+async function scheduleActivity(idx, btn) {
+  const a = _activities[idx];
+  if(!a) return;
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ 创建中...';
+  const res = await api('/api/signup/schedule_activity', {
+    method: 'POST',
+    body: JSON.stringify({
+      activity_id: a.activity_id,
+      join_start_time: a.join_start_time,
+      title: a.title
+    })
+  });
+  if(res.code === 200) {
+    btn.textContent = '✅ 已创建';
+    btn.style.background = '#f0fdf4';
+    btn.style.color = '#16a34a';
+    btn.style.borderColor = '#bbf7d0';
+    btn.disabled = true;
+    loadScheduled();
+    loadActivities();  // 刷新活动列表更新按钮状态
+  } else {
+    btn.textContent = orig;
+    btn.disabled = false;
+    alert(res.msg || '创建失败');
+  }
+}
+
+async function loadScheduled() {
+  const res = await api('/api/signup/scheduled');
+  const el = document.getElementById('scheduled-list');
+  if(!el) return;
+  const list = res.data || [];
+  if(!list.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>暂无定时任务</div>';
+    return;
+  }
+  el.innerHTML = list.map(t => {
+    const statusMap = {
+      scheduled: {icon:'⏰', color:'#2563eb', bg:'#dbeafe', label:'等待触发'},
+      pending:   {icon:'⏳', color:'#d97706', bg:'#fef3c7', label:'待执行'},
+      success:   {icon:'✅', color:'#16a34a', bg:'#dcfce7', label:'报名成功'},
+      failed:    {icon:'❌', color:'#dc2626', bg:'#fee2e2', label:'报名失败'},
+      done:      {icon:'✔️', color:'#64748b', bg:'#f1f5f9', label:'已执行'},
+    };
+    const s = statusMap[t.status] || statusMap.done;
+    const titleText = t.title && t.title !== t.activity_id ? t.title : `活动 ${t.activity_id}`;
+    return `<div style="padding:12px 14px;border-radius:10px;background:#f8fafc;border:1.5px solid #e2e8f0;margin-bottom:8px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="font-weight:600;font-size:.9rem;flex:1;line-height:1.4">${titleText}</div>
+        <span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;
+                     background:${s.bg};color:${s.color};white-space:nowrap;flex-shrink:0">
+          ${s.icon} ${s.label}
+        </span>
+      </div>
+      <div style="font-size:.78rem;color:#64748b;margin-top:6px;line-height:1.8">
+        <div>🕐 报名时间：<b>${t.join_start_time || '—'}</b></div>
+        ${t.next_run ? `<div>⏰ 触发时间：<b style="color:#2563eb">${t.next_run}</b></div>` : ''}
+        ${t.result_msg ? `<div style="color:${t.status==='success'?'#16a34a':'#dc2626'}">💬 ${t.result_msg}</div>` : ''}
+        <div style="color:#94a3b8;font-size:.72rem">注册于 ${t.created_at}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadLogs() {
+  const res = await api('/api/signup/logs');
+  const box = document.getElementById('su-log-box');
+  if(!box) return;
+  box.innerHTML = (res.data || []).map(l => `<div>${l}</div>`).join('') || '<div style="color:#64748b">暂无日志</div>';
+  box.scrollTop = box.scrollHeight;
+}
+
+let _qrcodeTimer = null;
+let _countdownTimer = null;
+async function toggleQrcode() {
+  const box = document.getElementById('qrcode-box');
+  if(box.style.display === 'none') {
+    box.style.display = 'block';
+    await refreshQrcode();
+  } else {
+    box.style.display = 'none';
+    stopQrcodeTimers();
+  }
+}
+function stopQrcodeTimers() {
+  if(_qrcodeTimer) { clearInterval(_qrcodeTimer); _qrcodeTimer = null; }
+  if(_countdownTimer) { clearInterval(_countdownTimer); _countdownTimer = null; }
+}
+function startCountdown() {
+  const numEl = document.getElementById('countdown-num');
+  const cdBox = document.getElementById('qrcode-countdown');
+  let sec = 30;
+  numEl.textContent = sec;
+  cdBox.style.display = 'block';
+  if(_countdownTimer) clearInterval(_countdownTimer);
+  _countdownTimer = setInterval(() => {
+    sec--;
+    numEl.textContent = sec;
+    if(sec <= 0) {
+      clearInterval(_countdownTimer);
+      _countdownTimer = null;
+      refreshQrcode();
+    }
+  }, 1000);
+}
+async function refreshQrcode() {
+  const loading = document.getElementById('qrcode-loading');
+  const img = document.getElementById('qrcode-img');
+  loading.textContent = '生成中...';
+  loading.style.display = 'block';
+  loading.style.color = '#64748b';
+  img.style.display = 'none';
+  const res = await api('/api/signup/qrcode');
+  if(res.code === 200 && res.data && res.data.base64) {
+    img.src = 'data:image/png;base64,' + res.data.base64;
+    img.style.display = 'inline-block';
+    loading.style.display = 'none';
+    startCountdown();
+  } else {
+    loading.textContent = res.msg || '生成二维码失败';
+    loading.style.color = '#dc2626';
+    img.style.display = 'none';
+  }
+}
+
+init();
+setInterval(loadLogs, 5000);
+</script>
+</body>
+</html>

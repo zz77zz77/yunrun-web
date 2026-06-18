@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>云运动助手 - 登录</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="login-body">
+<div class="login-card">
+  <div class="login-logo">🏃</div>
+  <h1 class="login-title">云运动助手</h1>
+  <p class="login-sub">请登录以继续</p>
+  <div id="msg" class="msg hidden"></div>
+  <div class="form-group">
+    <label>学校</label>
+    <input type="text" id="school_name" placeholder="搜索学校名称..." autocomplete="off" list="school-list">
+    <datalist id="school-list"></datalist>
+  </div>
+  <div class="form-group">
+    <label>用户名</label>
+    <input type="text" id="username" placeholder="请输入用户名">
+  </div>
+  <div class="form-group">
+    <label>密码</label>
+    <input type="password" id="password" placeholder="请输入密码">
+  </div>
+  <div class="form-group">
+    <label>设备名称</label>
+    <select id="device_name"></select>
+  </div>
+  <button class="btn btn-primary btn-block" id="login-btn" onclick="doLogin()">登录</button>
+</div>
+
+<script src="/static/js/login.js"></script>
+</body>
+</html>

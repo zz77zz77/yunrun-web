@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>云运动助手</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="layout">
+  <!-- 侧边栏 / 底部导航（移动端） -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">🏃 云运动</div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="home">🏠 <span>主页</span></a>
+      <a href="#" class="nav-item" data-page="run">▶️ <span>开始跑步</span></a>
+      <a href="#" class="nav-item" data-page="history">📋 <span>历史记录</span></a>
+      <a href="#" class="nav-item" data-page="cron">⏰ <span>定时任务</span></a>
+      <a href="#" class="nav-item" data-page="logs">📝 <span>运行日志</span></a>
+      <a href="#" class="nav-item" data-page="profile">👤 <span>个人中心</span></a>
+      <a href="/signup" class="nav-item" data-external="true">🎯 <span>口袋报名</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" id="sidebar-user"></div>
+    </div>
+  </aside>
+
+  <!-- 主内容 -->
+  <main class="main-content">
+    <!-- 主页 -->
+    <div id="page-home" class="page active">
+      <h2 class="page-title">🏠 主页</h2>
+      <div class="cards-grid">
+        <div class="card"><div class="card-icon">👤</div><div class="card-label">姓名</div><div class="card-value" id="home-name">-</div></div>
+        <div class="card"><div class="card-icon">🏫</div><div class="card-label">学校</div><div class="card-value" id="home-school">-</div></div>
+        <div class="card"><div class="card-icon">💎</div><div class="card-label">会员有效期</div><div class="card-value" id="home-expire">-</div></div>
+        <div class="card"><div class="card-icon">📱</div><div class="card-label">设备</div><div class="card-value" id="home-device">-</div></div>
+      </div>
+      <div class="card mt-20" id="home-run-stats">
+        <div class="flex-between" style="margin-bottom:16px">
+          <h3>🏃 本学期跑步进度</h3>
+          <span class="text-muted" id="home-term-name" style="font-size:.85rem"></span>
+        </div>
+        <div id="home-stats-loading" class="text-muted">加载中...</div>
+        <div id="home-stats-content" style="display:none">
+          <div style="margin-bottom:12px">
+            <div class="flex-between" style="margin-bottom:6px">
+              <span style="font-size:.9rem;font-weight:600">合格次数进度</span>
+              <span style="font-size:.9rem" id="home-progress-text">0 / 40</span>
+            </div>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" id="home-progress-bar" style="width:0%"></div></div>
+            <div style="font-size:.8rem;color:#888;margin-top:4px" id="home-progress-pct">0%</div>
+          </div>
+          <div class="cards-grid" style="grid-template-columns:repeat(4,1fr);gap:12px">
+            <div class="stat-mini"><div class="stat-mini-val green" id="home-qualified">-</div><div class="stat-mini-label">✅ 合格</div></div>
+            <div class="stat-mini"><div class="stat-mini-val red" id="home-unqualified">-</div><div class="stat-mini-label">❌ 不合格</div></div>
+            <div class="stat-mini"><div class="stat-mini-val" id="home-total-runs">-</div><div class="stat-mini-label">📊 总次数</div></div>
+            <div class="stat-mini"><div class="stat-mini-val blue" id="home-distance">-</div><div class="stat-mini-label">📍 总距离</div></div>
+          </div>
+        </div>
+        <div id="home-stats-error" class="text-muted" style="display:none"></div>
+      </div>
+      <div class="card mt-20">
+        <h3>快速操作</h3>
+        <div class="btn-row mt-10">
+          <button class="btn btn-primary" onclick="switchPage('run')">▶️ 开始跑步</button>
+          <button class="btn btn-secondary" onclick="switchPage('history')">📋 查看历史</button>
+          <button class="btn btn-secondary" onclick="switchPage('cron')">⏰ 定时任务</button>
+        </div>
+      </div>
+      <div class="card mt-20" id="home-running-card" style="display:none">
+        <div class="flex-between" style="margin-bottom:12px">
+          <h3>🏃 跑步进行中</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="status-badge running" id="home-run-badge">运行中</span>
+            <button class="btn btn-sm btn-primary" id="home-run-view-btn" onclick="viewActiveRun()">📊 查看详情</button>
+          </div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div class="flex-between" style="margin-bottom:6px">
+            <span style="font-size:.9rem">轨迹上传进度</span>
+            <span style="font-size:.9rem;font-weight:600" id="home-run-progress-text">0 / 0</span>
+          </div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="home-run-progress-bar" style="width:0%;background:linear-gradient(90deg,#10b981,#059669)"></div></div>
+        </div>
+        <div class="text-muted" style="font-size:.8rem" id="home-run-last-log"></div>
+      </div>
+    </div>
+
+    <!-- 跑步页 -->
+    <div id="page-run" class="page">
+      <h2 class="page-title">▶️ 开始跑步</h2>
+      <div class="card">
+        <h3>选择任务文件</h3>
+        <p class="text-muted">上传历史记录JSON文件，或从已保存的文件中选择</p>
+        <div class="upload-area" id="upload-area">
+          <input type="file" id="task-file-input" accept=".json" style="display:none" onchange="uploadTaskFile(this)">
+          <div onclick="document.getElementById('task-file-input').click()">
+            <div style="font-size:2rem">📁</div>
+            <div>点击上传 JSON 任务文件</div>
+          </div>
+        </div>
+        <div id="upload-info" class="hidden info-box mt-10"></div>
+      </div>
+      <div class="card mt-20">
+        <div class="flex-between">
+          <h3>已保存的任务文件</h3>
+          <button class="btn btn-sm btn-outline" onclick="loadTaskFiles()">🔄 刷新</button>
+        </div>
+        <div id="task-files-list" class="mt-10"><div class="text-muted">加载中...</div></div>
+      </div>
+      <div class="card mt-20" id="run-panel" style="display:none">
+        <h3>执行跑步</h3>
+        <div class="info-box" id="selected-task-info"></div>
+        <div class="btn-row mt-10">
+          <button class="btn btn-primary" id="start-run-btn" onclick="startRun()">🏃 开始跑步</button>
+          <button class="btn btn-danger hidden" id="stop-run-btn" onclick="stopRun()">⏹ 停止跑步</button>
+        </div>
+        <div id="run-status" class="mt-10 hidden">
+          <div class="status-badge running" id="run-status-badge">后台运行中，可关闭页面</div>
+          <div style="margin-top:8px"><span class="text-muted" id="run-progress-text"></span></div>
+        </div>
+      </div>
+      <div id="run-live-panel" class="hidden mt-20" style="display:none">
+        <div class="run-live-grid">
+          <div class="card">
+            <div class="flex-between" style="margin-bottom:10px">
+              <h3>🗺️ 实时跑步路径</h3>
+              <span class="text-muted" id="map-point-count">0 / 0 点</span>
+            </div>
+            <div id="run-map" style="width:100%;height:320px;border-radius:8px;background:#e8f4f8"></div>
+          </div>
+          <div class="card">
+            <div class="flex-between" style="margin-bottom:10px">
+              <h3>📝 实时日志</h3>
+              <button class="btn btn-xs btn-outline" onclick="document.getElementById('live-log-box').innerHTML=''">清空</button>
+            </div>
+            <div id="live-log-box" class="log-box" style="height:320px;overflow-y:auto"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 历史记录页 -->
+    <div id="page-history" class="page">
+      <h2 class="page-title">📋 历史记录</h2>
+      <div class="card">
+        <div class="flex-between">
+          <div class="flex-row gap-10" style="flex-wrap:wrap">
+            <select id="term-select" onchange="loadRuns()"><option>加载中...</option></select>
+            <button class="btn btn-sm btn-outline" onclick="loadTerms()">🔄 刷新</button>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="saveSelectedRuns()">💾 保存选中</button>
+        </div>
+      </div>
+      <div class="cards-grid mt-20" id="stats-cards">
+        <div class="card"><div class="card-label">合格次数</div><div class="card-value" id="stat-count">-</div></div>
+        <div class="card"><div class="card-label">总距离</div><div class="card-value" id="stat-dist">-</div></div>
+        <div class="card"><div class="card-label">总时长</div><div class="card-value" id="stat-time">-</div></div>
+        <div class="card"><div class="card-label">完成度</div><div class="card-value" id="stat-pct">-</div></div>
+      </div>
+      <div class="card mt-20">
+        <div id="runs-table-wrap"><div class="text-muted">请先选择学期</div></div>
+      </div>
+    </div>
+
+    <!-- 定时任务页 -->
+    <div id="page-cron" class="page">
+      <h2 class="page-title">⏰ 定时任务</h2>
+      <div class="card">
+        <h3>创建定时任务</h3>
+        <div class="cron-tabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-primary" id="tab-repeat" onclick="switchCronTab('repeat')">🔁 周期执行</button>
+          <button class="btn btn-sm btn-outline" id="tab-once" onclick="switchCronTab('once')">📅 指定日期执行一次</button>
+        </div>
+        <div id="cron-form-repeat">
+          <div class="form-row">
+            <div class="form-group">
+              <label>任务名称</label>
+              <input type="text" id="cron-name" placeholder="例如：每天早上跑步">
+            </div>
+            <div class="form-group">
+              <label>执行时间</label>
+              <input type="time" id="cron-time" value="07:00">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>执行日期（可多选）</label>
+            <div class="day-picker" id="day-picker">
+              <button type="button" class="day-btn" data-day="0">周一</button>
+              <button type="button" class="day-btn" data-day="1">周二</button>
+              <button type="button" class="day-btn" data-day="2">周三</button>
+              <button type="button" class="day-btn" data-day="3">周四</button>
+              <button type="button" class="day-btn" data-day="4">周五</button>
+              <button type="button" class="day-btn" data-day="5">周六</button>
+              <button type="button" class="day-btn" data-day="6">周日</button>
+            </div>
+            <div class="day-presets mt-10">
+              <button class="btn btn-xs btn-outline" onclick="setDays([0,1,2,3,4])">工作日</button>
+              <button class="btn btn-xs btn-outline" onclick="setDays([5,6])">周末</button>
+              <button class="btn btn-xs btn-outline" onclick="setDays([0,1,2,3,4,5,6])">每天</button>
+              <button class="btn btn-xs btn-outline" onclick="setDays([])">清空</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>选择任务文件</label>
+            <div style="margin-bottom:8px" id="cron-school-file-toggle" style="display:none">
+              <div class="flex-between" style="background:#f8fafc;border-radius:8px;padding:10px 14px">
+                <span style="font-size:.9rem">🎲 随机使用学校内置文件（按性别）</span>
+                <label class="toggle" style="margin:0">
+                  <input type="checkbox" id="cron-use-school-file" onchange="toggleSchoolFile('cron')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <select id="cron-task-file"><option value="">-- 请选择任务文件 --</option></select>
+          </div>
+          <button class="btn btn-primary mt-10" onclick="createCronJob()">➕ 创建定时任务</button>
+        </div>
+        <div id="cron-form-once" style="display:none">
+          <div class="form-row">
+            <div class="form-group">
+              <label>任务名称</label>
+              <input type="text" id="once-name" placeholder="例如：明天跑步">
+            </div>
+            <div class="form-group">
+              <label>执行时间</label>
+              <input type="time" id="once-time" value="07:00">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>执行日期</label>
+              <input type="date" id="once-date">
+            </div>
+            <div class="form-group">
+              <label>选择任务文件</label>
+              <div style="margin-bottom:8px" id="once-school-file-toggle" style="display:none">
+                <div class="flex-between" style="background:#f8fafc;border-radius:8px;padding:10px 14px">
+                  <span style="font-size:.9rem">🎲 随机使用学校内置文件（按性别）</span>
+                  <label class="toggle" style="margin:0">
+                    <input type="checkbox" id="once-use-school-file" onchange="toggleSchoolFile('once')">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <select id="once-task-file"><option value="">-- 请选择任务文件 --</option></select>
+            </div>
+          </div>
+          <div class="day-presets mt-10" style="margin-bottom:12px">
+            <button class="btn btn-xs btn-outline" onclick="setOnceDate(1)">明天</button>
+            <button class="btn btn-xs btn-outline" onclick="setOnceDate(2)">后天</button>
+            <button class="btn btn-xs btn-outline" onclick="setOnceDate(7)">一周后</button>
+          </div>
+          <button class="btn btn-primary" onclick="createOnceJob()">📅 创建一次性任务</button>
+        </div>
+      </div>
+
+      <!-- 邮件通知（移至定时任务） -->
+      <div class="card mt-20">
+        <div class="flex-between" style="margin-bottom:16px">
+          <h3>📧 邮件通知</h3>
+          <label class="toggle" style="margin:0">
+            <input type="checkbox" id="email-enable" onchange="toggleEmailEnable(this)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <p class="text-muted" style="margin-bottom:16px;font-size:.85rem">定时任务完成或失败后自动发送邮件通知</p>
+        <div class="form-group">
+          <label>接收通知的邮箱</label>
+          <input type="email" id="email-receiver" placeholder="your@example.com">
+        </div>
+        <div class="btn-row mt-10">
+          <button class="btn btn-primary" onclick="saveEmailConfig()">💾 保存</button>
+          <button class="btn btn-outline" onclick="testEmail()">📨 发送测试邮件</button>
+        </div>
+      </div>
+
+      <div class="card mt-20">
+        <div class="flex-between">
+          <h3>我的定时任务</h3>
+          <button class="btn btn-sm btn-outline" onclick="loadCronJobs()">🔄 刷新</button>
+        </div>
+        <div id="cron-jobs-list" class="mt-10"><div class="text-muted">加载中...</div></div>
+      </div>
+    </div>
+
+    <!-- 日志页 -->
+    <div id="page-logs" class="page">
+      <h2 class="page-title">📝 运行日志</h2>
+      <div class="card">
+        <div class="flex-between">
+          <span class="text-muted">最近100条日志</span>
+          <button class="btn btn-sm btn-outline" onclick="loadLogs()">🔄 刷新</button>
+        </div>
+        <div id="logs-container" class="log-box mt-10"></div>
+      </div>
+    </div>
+
+    <!-- 个人中心页 -->
+    <div id="page-profile" class="page">
+      <h2 class="page-title">👤 个人中心</h2>
+      <div class="card">
+        <h3>会员信息</h3>
+        <div id="member-info" class="info-grid"></div>
+        <div class="btn-row mt-10">
+          <button class="btn btn-primary" onclick="showRechargeModal()">💳 充值卡密</button>
+        </div>
+      </div>
+      <div class="card mt-20">
+        <h3>学生信息</h3>
+        <div id="student-info" class="info-grid"></div>
+      </div>
+      <div class="card mt-20">
+        <button class="btn btn-danger btn-block" onclick="logout()">🚪 退出登录</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 充值弹窗 -->
+<div id="recharge-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center" onclick="if(event.target===this)hideRechargeModal()">
+  <div style="background:#fff;border-radius:12px;width:380px;max-width:95vw;padding:28px">
+    <h2 style="margin:0 0 8px;font-size:1.2rem">💳 充值卡密</h2>
+    <p style="color:#888;font-size:.85rem;margin:0 0 16px">输入充值卡密，到期时间将自动延长</p>
+    <div id="rch-msg" class="msg hidden"></div>
+    <div class="form-group">
+      <label>充值卡密</label>
+      <input type="text" id="rch-key" placeholder="请输入充值卡密">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-outline" style="flex:1" onclick="hideRechargeModal()">取消</button>
+      <button class="btn btn-primary" style="flex:1" id="rch-btn" onclick="doRecharge()">确认充值</button>
+    </div>
+  </div>
+</div>
+
+<!-- 底部导航（移动端） -->
+<nav class="bottom-nav" id="bottom-nav">
+  <a href="#" class="bottom-nav-item active" data-page="home">🏠<span>主页</span></a>
+  <a href="#" class="bottom-nav-item" data-page="run">▶️<span>跑步</span></a>
+  <a href="#" class="bottom-nav-item" data-page="history">📋<span>历史</span></a>
+  <a href="#" class="bottom-nav-item" data-page="cron">⏰<span>定时</span></a>
+  <a href="/signup" class="bottom-nav-item" data-external="true">🎯<span>报名</span></a>
+  <a href="#" class="bottom-nav-item" data-page="profile">👤<span>我的</span></a>
+</nav>
+
+<script>
+// 动态加载高德地图
+(async function() {
+  try {
+    const res = await fetch('/api/config/map_key');
+    const d = await res.json();
+    const key = (d.data && d.data.key) || '';
+    const secCode = (d.data && d.data.security_code) || '';
+    window.__AMAP_KEY = key;
+    window.__AMAP_SECURITY_CODE = secCode;
+    if (!key) {
+      console.warn('高德地图 Key 未配置，请在管理后台 -> 系统设置 -> 高德地图配置中设置');
+      const appScript = document.createElement('script');
+      appScript.src = '/static/js/app.js';
+      document.body.appendChild(appScript);
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://webapi.amap.com/maps?v=2.0&key=' + key;
+    s.onload = function() {
+      const appScript = document.createElement('script');
+      appScript.src = '/static/js/app.js';
+      document.body.appendChild(appScript);
+    };
+    s.onerror = function() {
+      console.error('高德地图加载失败，请检查 Key 是否正确');
+      const appScript = document.createElement('script');
+      appScript.src = '/static/js/app.js';
+      document.body.appendChild(appScript);
+    };
+    document.head.appendChild(s);
+  } catch(e) {
+    console.error('获取地图配置失败:', e);
+    const appScript = document.createElement('script');
+    appScript.src = '/static/js/app.js';
+    document.body.appendChild(appScript);
+  }
+})();
+</script>
+</body>
+</html>

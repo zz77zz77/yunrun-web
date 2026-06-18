@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>云运动助手 - 管理后台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#1e293b;color:#fff;flex-shrink:0;display:flex;flex-direction:column}
+.sidebar-title{padding:20px 16px;font-size:1.1rem;font-weight:700;border-bottom:1px solid #334155}
+.nav-item{padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.nav-item:hover,.nav-item.active{background:#334155}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid #334155;font-size:.8rem;color:#94a3b8}
+.main{flex:1;overflow:auto}
+.topbar{background:#fff;padding:14px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between}
+.topbar h2{font-size:1.1rem;font-weight:600}
+.content{padding:24px}
+.page{display:none}.page.active{display:block}
+.card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:20px}
+.card h3{font-size:1rem;font-weight:600;margin-bottom:16px;color:#374151}
+table{width:100%;border-collapse:collapse;font-size:.875rem}
+th{background:#f8fafc;padding:10px 12px;text-align:left;font-weight:600;color:#64748b;border-bottom:2px solid #e2e8f0}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:hover td{background:#f8fafc}
+.btn{padding:7px 14px;border:none;border-radius:6px;cursor:pointer;font-size:.85rem;font-weight:500;transition:all .15s}
+.btn-primary{background:#3b82f6;color:#fff}.btn-primary:hover{background:#2563eb}
+.btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-success{background:#10b981;color:#fff}.btn-success:hover{background:#059669}
+.btn-outline{background:#fff;border:1px solid #d1d5db;color:#374151}.btn-outline:hover{background:#f9fafb}
+.btn-sm{padding:4px 10px;font-size:.8rem}
+.btn-xs{padding:2px 8px;font-size:.75rem}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.85rem;font-weight:500;margin-bottom:6px;color:#374151}
+.form-group input,.form-group select{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.875rem;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:500}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.msg{padding:10px 14px;border-radius:6px;font-size:.875rem;margin-bottom:12px}
+.msg.success{background:#dcfce7;color:#166534}
+.msg.error{background:#fee2e2;color:#991b1b}
+.hidden{display:none!important}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;width:480px;max-width:95vw;padding:28px;max-height:90vh;overflow-y:auto}
+.modal h3{margin-bottom:20px;font-size:1.1rem}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.gap-8{gap:8px;display:flex}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08);text-align:center}
+.stat-num{font-size:2rem;font-weight:700;color:#3b82f6}
+.stat-label{font-size:.8rem;color:#64748b;margin-top:4px}
+.file-list{list-style:none}
+.file-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:6px;margin-bottom:4px;background:#f8fafc;font-size:.875rem}
+.search-bar{display:flex;gap:8px;margin-bottom:16px}
+.search-bar input{flex:1;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:.875rem;outline:none}
+.search-bar input:focus{border-color:#3b82f6}
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- 侧边栏 -->
+  <div class="sidebar">
+    <div class="sidebar-title">🛡️ 管理后台</div>
+    <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">📊 概览</div>
+    <div class="nav-item" data-page="users" onclick="switchPage('users')">👥 用户管理</div>
+    <div class="nav-item" data-page="school_files" onclick="switchPage('school_files')">📁 学校文件管理</div>
+    <div class="nav-item" data-page="admins" onclick="switchPage('admins')">🔑 管理员管理</div>
+    <div class="nav-item" data-page="keys" onclick="switchPage('keys')">🎫 密钥管理</div>
+    <div class="nav-item" data-page="devices" onclick="switchPage('devices')">📱 设备管理</div>
+    <div class="nav-item" data-page="sysconfig" onclick="switchPage('sysconfig')">🔧 系统设置</div>
+    <div class="nav-item" data-page="cron_admin" onclick="switchPage('cron_admin')">⏰ 定时任务</div>
+    <div class="nav-item" data-page="logs_admin" onclick="switchPage('logs_admin')">📝 运行日志</div>
+    <div class="nav-item" data-page="pu_admin" onclick="switchPage('pu_admin')">🎯 口袋管理</div>
+    <div class="nav-item" data-page="settings" onclick="switchPage('settings')">⚙️ 修改密码</div>
+    <div class="sidebar-footer" id="admin-name">加载中...</div>
+  </div>
+
+  <!-- 主内容 -->
+  <div class="main">
+    <div class="topbar">
+      <h2 id="page-title">概览</h2>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()">退出登录</button>
+    </div>
+    <div class="content">
+
+      <!-- 概览 -->
+      <div id="page-dashboard" class="page active">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-num" id="stat-total">-</div><div class="stat-label">总用户数</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-active">-</div><div class="stat-label">有效会员</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-expired">-</div><div class="stat-label">已过期</div></div>
+        </div>
+        <div class="card">
+          <h3>最近注册用户</h3>
+          <table><thead><tr><th>用户名</th><th>学校</th><th>会员到期</th><th>状态</th></tr></thead>
+          <tbody id="recent-users"></tbody></table>
+        </div>
+      </div>
+
+      <!-- 用户管理 -->
+      <div id="page-users" class="page">
+        <div class="card" style="margin-bottom:16px">
+          <div class="flex-between">
+            <h3 style="margin:0">批量延长有效会员时长</h3>
+          </div>
+          <p style="font-size:.85rem;color:#64748b;margin:8px 0 12px">仅对当前有效期内（未过期）的用户生效</p>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input type="number" id="extend-days" min="1" max="365" placeholder="天数" style="width:120px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.875rem">
+            <button class="btn btn-success" onclick="batchExtend()">➕ 批量延长</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="flex-between" style="margin-bottom:16px">
+            <h3 style="margin:0">用户列表</h3>
+          </div>
+          <div class="search-bar">
+            <input type="text" id="user-search" placeholder="搜索用户名或学校..." oninput="filterUsers()">
+          </div>
+          <table>
+            <thead><tr><th>用户名</th><th>学校</th><th>会员到期时间</th><th>状态</th><th>备注</th><th>操作</th></tr></thead>
+            <tbody id="users-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 学校文件管理 -->
+      <div id="page-school_files" class="page">
+        <div class="card">
+          <div class="flex-between" style="margin-bottom:16px">
+            <h3 style="margin:0">学校文件夹配置</h3>
+            <button class="btn btn-primary btn-sm" onclick="showAddFolderModal()">➕ 添加学校文件夹</button>
+          </div>
+          <div id="school-folders"></div>
+        </div>
+      </div>
+
+      <!-- 管理员管理 -->
+      <div id="page-admins" class="page">
+        <div class="card">
+          <div class="flex-between" style="margin-bottom:16px">
+            <h3 style="margin:0">管理员列表</h3>
+            <button class="btn btn-primary btn-sm" onclick="showAddAdmin()">➕ 添加管理员</button>
+          </div>
+          <table>
+            <thead><tr><th>用户名</th><th>来源</th><th>操作</th></tr></thead>
+            <tbody id="admins-table"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>从用户表设置管理员</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>选择用户</label>
+              <select id="promote-user"><option value="">-- 选择用户 --</option></select>
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end">
+              <button class="btn btn-success" onclick="promoteUser()">设为管理员</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 密钥管理 -->
+      <div id="page-keys" class="page">
+        <div class="card" style="margin-bottom:16px">
+          <h3 style="margin-bottom:14px">生成卡密</h3>
+          <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="margin:0">
+              <label>时长（小时）</label>
+              <select id="key-hours" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.875rem">
+                <option value="720">720小时（1个月）</option>
+                <option value="1440">1440小时（2个月）</option>
+                <option value="2160">2160小时（3个月）</option>
+                <option value="4320">4320小时（6个月）</option>
+                <option value="8760">8760小时（1年）</option>
+                <option value="custom">自定义</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0" id="custom-hours-wrap" style="display:none">
+              <label>自定义小时数</label>
+              <input type="number" id="custom-hours" min="1" placeholder="小时数" style="width:120px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.875rem">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>生成数量</label>
+              <input type="number" id="key-count" min="1" max="100" value="1" style="width:80px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.875rem">
+            </div>
+            <button class="btn btn-primary" onclick="generateKeys()">✨ 生成</button>
+          </div>
+          <div id="gen-result" style="margin-top:12px;display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:.85rem;color:#64748b">生成的卡密：</span>
+              <button class="btn btn-outline btn-xs" onclick="copyKeys()">📋 复制全部</button>
+            </div>
+            <textarea id="gen-keys-text" readonly style="width:100%;height:80px;padding:8px;border:1px solid #e2e8f0;border-radius:6px;font-size:.8rem;font-family:monospace;resize:none"></textarea>
+          </div>
+        </div>
+        <div class="card">
+          <div class="flex-between" style="margin-bottom:14px">
+            <h3 style="margin:0">卡密列表</h3>
+            <div class="gap-8">
+              <select id="key-filter" onchange="loadKeys()" style="padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.85rem">
+                <option value="all">全部</option>
+                <option value="unused">未使用</option>
+                <option value="used">已使用</option>
+              </select>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>卡密</th><th>时长</th><th>状态</th><th>使用者</th><th>操作</th></tr></thead>
+            <tbody id="keys-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 设备管理 -->
+      <div id="page-devices" class="page">
+        <div class="card">
+          <div class="flex-between" style="margin-bottom:14px">
+            <h3 style="margin:0">设备列表</h3>
+            <button class="btn btn-primary btn-sm" onclick="showAddDevice()">➕ 添加设备</button>
+          </div>
+          <table>
+            <thead><tr><th>ID</th><th>设备名称</th><th>操作</th></tr></thead>
+            <tbody id="devices-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 定时任务管理 -->
+      <div id="page-cron_admin" class="page">
+        <div class="card">
+          <div class="flex-between" style="margin-bottom:14px">
+            <h3 style="margin:0">所有用户定时任务</h3>
+            <button class="btn btn-outline btn-sm" onclick="loadAdminCron()">🔄 刷新</button>
+          </div>
+          <table>
+            <thead><tr><th>用户</th><th>任务名</th><th>执行时间</th><th>文件</th><th>状态</th><th>最近执行</th><th>操作</th></tr></thead>
+            <tbody id="admin-cron-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 运行日志 -->
+      <div id="page-logs_admin" class="page">
+        <div class="card">
+          <div class="flex-between" style="margin-bottom:14px">
+            <h3 style="margin:0">运行日志</h3>
+            <div class="gap-8">
+              <div style="position:relative;display:flex;align-items:center;gap:6px">
+                <input type="text" id="log-user-filter" list="log-user-datalist"
+                  placeholder="全部用户（可输入筛选）"
+                  oninput="loadAdminLogs()"
+                  style="padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.85rem;width:200px;outline:none"
+                  onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#d1d5db'">
+                <datalist id="log-user-datalist"></datalist>
+                <button class="btn btn-outline btn-xs" onclick="document.getElementById('log-user-filter').value='';loadAdminLogs()" title="清空">✕</button>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="loadAdminLogs()">🔄 刷新</button>
+            </div>
+          </div>
+          <div id="admin-logs-box" style="background:#1a1a2e;color:#a8ff78;border-radius:8px;padding:16px;font-family:monospace;font-size:.8rem;max-height:600px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- 系统设置 -->
+      <div id="page-sysconfig" class="page">
+        <!-- 邮件配置 -->
+        <div class="card">
+          <h3 style="margin-bottom:16px">📧 邮件通知配置</h3>
+          <p style="font-size:.85rem;color:#64748b;margin-bottom:16px">配置 SMTP 服务器，用于发送跑步完成/报名结果等通知邮件</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>SMTP 服务器</label>
+              <input id="cfg-smtp-server" placeholder="smtp.qq.com">
+            </div>
+            <div class="form-group">
+              <label>端口</label>
+              <input id="cfg-smtp-port" placeholder="465" type="number">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>发件人邮箱</label>
+              <input id="cfg-smtp-user" placeholder="your@qq.com">
+            </div>
+            <div class="form-group">
+              <label>SMTP 授权码</label>
+              <input id="cfg-smtp-pass" type="password" placeholder="邮箱授权码（非登录密码）">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>发件人名称</label>
+            <input id="cfg-sender-name" placeholder="云运动助手">
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:16px">
+            <button class="btn btn-primary" onclick="saveEmailConfig()">💾 保存配置</button>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="cfg-test-email" placeholder="测试收件人邮箱" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.85rem;width:200px">
+              <button class="btn btn-outline" onclick="testEmail()">📨 发送测试</button>
+            </div>
+          </div>
+          <div id="email-msg" class="msg hidden" style="margin-top:12px"></div>
+        </div>
+        <!-- 地图配置 -->
+        <div class="card">
+          <h3 style="margin-bottom:16px">🗺️ 高德地图配置</h3>
+          <p style="font-size:.85rem;color:#64748b;margin-bottom:16px">在 <a href="https://console.amap.com/" target="_blank">高德开放平台</a> 申请 Key，用于跑步轨迹地图展示</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>地图 Key</label>
+              <input id="cfg-amap-key" placeholder="高德地图 Key">
+            </div>
+            <div class="form-group">
+              <label>安全密钥 (securityJsCode)</label>
+              <input id="cfg-amap-security" placeholder="高德安全密钥（2.0 必填）">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:16px">
+            <button class="btn btn-primary" onclick="saveMapConfig()">💾 保存地图配置</button>
+          </div>
+          <div id="map-msg" class="msg hidden" style="margin-top:12px"></div>
+        </div>
+        <!-- 调度器配置 -->
+        <div class="card">
+          <h3 style="margin-bottom:16px">🔧 调度器配置</h3>
+          <p style="font-size:.85rem;color:#64748b;margin-bottom:16px">修改后立即生效，无需重启服务</p>
+          <table>
+            <thead><tr><th>配置项</th><th>说明</th><th>当前值</th><th>操作</th></tr></thead>
+            <tbody id="sysconfig-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 口袋管理 -->
+      <div id="page-pu_admin" class="page">
+        <div class="card">
+          <div class="flex-between" style="margin-bottom:14px">
+            <h3 style="margin:0">🎯 口袋校园用户管理</h3>
+            <button class="btn btn-outline btn-sm" onclick="loadPuUsers()">🔄 刷新</button>
+          </div>
+          <p style="font-size:.85rem;color:#64748b;margin-bottom:14px">管理所有用户绑定的口袋校园账号，可开关自动托管报名功能</p>
+          <div class="search-bar">
+            <input type="text" id="pu-search" placeholder="搜索云运动账号或口袋账号..." oninput="filterPuUsers()">
+          </div>
+          <table>
+            <thead><tr><th>云运动账号</th><th>口袋账号</th><th>学校</th><th>邮箱</th><th>自动托管</th></tr></thead>
+            <tbody id="pu-users-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 修改密码 -->
+      <div id="page-settings" class="page">
+        <div class="card" style="max-width:400px">
+          <h3>修改管理员密码</h3>
+          <div id="pwd-msg" class="msg hidden"></div>
+          <div class="form-group"><label>当前密码</label><input type="password" id="old-pwd" placeholder="当前密码"></div>
+          <div class="form-group"><label>新密码</label><input type="password" id="new-pwd" placeholder="新密码（至少6位）"></div>
+          <div class="form-group"><label>确认新密码</label><input type="password" id="confirm-pwd" placeholder="再次输入新密码"></div>
+          <button class="btn btn-primary" onclick="changePassword()">修改密码</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 修改会员时间弹窗 -->
+<div id="modal-expire" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-expire')">
+  <div class="modal">
+    <h3>✏️ 修改会员到期时间</h3>
+    <div id="expire-msg" class="msg hidden"></div>
+    <div class="form-group"><label>用户名</label><input type="text" id="expire-username" readonly></div>
+    <div class="form-group"><label>新到期时间</label><input type="datetime-local" id="expire-date"></div>
+    <div class="gap-8" style="justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-outline" onclick="closeModal('modal-expire')">取消</button>
+      <button class="btn btn-primary" onclick="saveExpire()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加管理员弹窗 -->
+<div id="modal-add-admin" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-add-admin')">
+  <div class="modal">
+    <h3>➕ 添加管理员</h3>
+    <div id="add-admin-msg" class="msg hidden"></div>
+    <div class="form-group"><label>用户名</label><input type="text" id="new-admin-user" placeholder="管理员用户名"></div>
+    <div class="form-group"><label>密码</label><input type="password" id="new-admin-pwd" placeholder="至少6位"></div>
+    <div class="gap-8" style="justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-outline" onclick="closeModal('modal-add-admin')">取消</button>
+      <button class="btn btn-primary" onclick="addAdmin()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 上传文件弹窗 -->
+<div id="modal-upload" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-upload')">
+  <div class="modal">
+    <h3>📤 上传任务文件</h3>
+    <div id="upload-msg" class="msg hidden"></div>
+    <p style="font-size:.85rem;color:#64748b;margin-bottom:12px">上传到：<b id="upload-folder-name"></b></p>
+    <div class="form-group">
+      <label>选择 JSON 文件（可多选）</label>
+      <input type="file" id="upload-files" accept=".json" multiple>
+    </div>
+    <div class="gap-8" style="justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-outline" onclick="closeModal('modal-upload')">取消</button>
+      <button class="btn btn-primary" onclick="doUpload()">上传</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加学校文件夹弹窗 -->
+<div id="modal-add-folder" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-add-folder')">
+  <div class="modal">
+    <h3>➕ 添加学校文件夹配置</h3>
+    <div id="add-folder-msg" class="msg hidden"></div>
+    <div class="form-group">
+      <label>学校名称</label>
+      <input type="text" id="folder-school" placeholder="搜索学校名称..." list="school-datalist" autocomplete="off">
+      <datalist id="school-datalist"></datalist>
+    </div>
+    <div class="form-group">
+      <label>文件夹类型</label>
+      <select id="folder-type">
+        <option value="default">通用（default）</option>
+        <option value="man">男生（man）</option>
+        <option value="woman">女生（woman）</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>文件夹名称</label>
+      <input type="text" id="folder-name" placeholder="例如：anhuiyoudian_man">
+      <small style="color:#94a3b8;font-size:.8rem">文件夹将创建在 school_tasks/ 目录下</small>
+    </div>
+    <div class="gap-8" style="justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-outline" onclick="closeModal('modal-add-folder')">取消</button>
+      <button class="btn btn-primary" onclick="saveFolder()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 设备编辑弹窗 -->
+<div id="modal-device" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-device')">
+  <div class="modal">
+    <h3 id="device-modal-title">➕ 添加设备</h3>
+    <div id="device-msg" class="msg hidden"></div>
+    <input type="hidden" id="device-id">
+    <div class="form-group"><label>设备名称</label><input type="text" id="device-name" placeholder="例如：Xiaomi 14"></div>
+    <div class="gap-8" style="justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-outline" onclick="closeModal('modal-device')">取消</button>
+      <button class="btn btn-primary" onclick="saveDevice()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 用户密码修改弹窗 -->
+<div id="modal-pwd" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-pwd')">
+  <div class="modal">
+    <h3>🔑 修改用户密码</h3>
+    <div id="pwd-modal-msg" class="msg hidden"></div>
+    <div class="form-group"><label>用户名</label><input type="text" id="pwd-username" readonly></div>
+    <div class="form-group"><label>新密码（至少6位）</label><input type="password" id="pwd-new" placeholder="请输入新密码"></div>
+    <div class="gap-8" style="justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-outline" onclick="closeModal('modal-pwd')">取消</button>
+      <button class="btn btn-primary" onclick="saveUserPwd()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 备注弹窗 -->
+<div id="modal-remark" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-remark')">
+  <div class="modal">
+    <h3>📝 编辑备注</h3>
+    <div id="remark-modal-msg" class="msg hidden"></div>
+    <div class="form-group"><label>用户名</label><input type="text" id="remark-username" readonly></div>
+    <div class="form-group"><label>备注内容</label><textarea id="remark-content" rows="3" placeholder="输入备注信息..." style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:.875rem;resize:vertical"></textarea></div>
+    <div class="gap-8" style="justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-outline" onclick="closeModal('modal-remark')">取消</button>
+      <button class="btn btn-primary" onclick="saveRemark()">保存</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* 管理后台移动端适配 */
+@media (max-width: 768px) {
+  .layout { flex-direction: column; }
+  .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; min-height: auto; }
+  .sidebar-title { width: 100%; padding: 12px 16px; font-size: 1rem; }
+  .nav-item { padding: 10px 12px; font-size: .8rem; flex: 1; text-align: center; min-width: 80px; }
+  .sidebar-footer { display: none; }
+  .main { overflow: auto; }
+  .content { padding: 14px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  table { font-size: .8rem; }
+  th, td { padding: 8px 6px; }
+  .modal { width: 95vw; padding: 20px; }
+  .search-bar { flex-direction: column; }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .nav-item { font-size: .75rem; padding: 8px 6px; }
+}
+</style>
+
+<script src="/static/js/admin.js"></script>
+</body>
+</html>
